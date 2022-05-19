@@ -1,8 +1,6 @@
 # NaughtyWords
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/naughty_words`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+A super basic gem to check if a string has profanites. 
 
 ## Installation
 
@@ -22,17 +20,44 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+**Check if a string includes a profanity**
+The `check` method takes in a `string:` argument and will return a boolean.
+```ruby
+    NaughtyWords.check(string: "ass")
+    => true
+
+    NaughtyWords.check(string: "hello world")
+    => false
+
+    NaughtyWords.check(string: "hello asshole")
+    => true
+```
+
+**Filter out words**
+The `filter` method takes a `string:` argument and an optional `replacement:` argument.
+
+``` ruby
+    # passing a string with no profanity will return the string
+    NaughtyWords.filter(string: "hello world")
+    => "hello world"
+    
+    # passing a string with profanities will return the string with the profanity filtered out
+    NaughtyWords.filter(string: "hello asshole")
+    => "hello *******"
+    
+    # you can use in your own filter character by passing it in as an argument  ("*" is by default)
+    NaughtyWords.filter(string: "hello asshole", replacement: "!")
+    => "hello !!!!!!!"
+```
+Note: Current, this is comically easy to circumvent. String like "shitshitshit" will only filter out the first match, returning "*****shitshit". A fix is enroute.
 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/naughty_words. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/naughty_words/blob/master/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/jaarnie/naughty_words. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/jaarnie/naughty_words/blob/master/CODE_OF_CONDUCT.md).
 
 ## License
 

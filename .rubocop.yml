@@ -11,3 +11,7 @@ Style/StringLiteralsInInterpolation:
 
 Layout/LineLength:
   Max: 120
+
+Style/Documentation:
+  Description: 'Document classes and non-namespace modules.'
+  Enabled: false
