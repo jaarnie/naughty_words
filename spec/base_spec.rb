@@ -6,7 +6,7 @@ RSpec.describe NaughtyWords::Base do
       it "returns true" do
         string = "fuck you"
 
-        expect(NaughtyWords::Base.profanity?(string: string)).to eq(true)
+        expect(NaughtyWords::Base.profanity?(string: string)).to be(true)
       end
     end
 
@@ -14,7 +14,7 @@ RSpec.describe NaughtyWords::Base do
       it "returns false" do
         string = "my_username_string"
 
-        expect(NaughtyWords::Base.profanity?(string: string)).to eq(false)
+        expect(NaughtyWords::Base.profanity?(string: string)).to be(false)
       end
     end
 
@@ -31,14 +31,40 @@ RSpec.describe NaughtyWords::Base do
         replacement = "*"
         string = "fuck you"
 
-        expect(NaughtyWords::Base.filter(string: string, replacement: replacement)).to eq("**** you")
+        expect(NaughtyWords::Base.filter(string: string,
+                                         replacement: replacement)).to eq("**** you")
       end
 
       it "returns a string with profanity replaced with the replacement converted fron an integer into a string" do
         replacement = 5
         string = "fuck you"
 
-        expect(NaughtyWords::Base.filter(string: string, replacement: replacement.to_s)).to eq("5555 you")
+        expect(NaughtyWords::Base.filter(string: string,
+                                         replacement: replacement.to_s)).to eq("5555 you")
+      end
+    end
+
+    context "when the string has consecutive profanities" do
+      it "returns a string with profanity replaced with the specified replacement" do
+        replacement = "*"
+        string_1 = "fuckfuckfuckhello"
+        string_2 = "fuckthisshitusername"
+        string_3 = "fuck_this_shitty_fucking_validation"
+
+        expect(NaughtyWords::Base.filter(
+                 string: string_1,
+                 replacement: replacement
+               )).to eq("************hello")
+
+        expect(NaughtyWords::Base.filter(
+                 string: string_2,
+                 replacement: replacement
+               )).to eq("****this****username")
+
+        expect(NaughtyWords::Base.filter(
+                 string: string_3,
+                 replacement: replacement
+               )).to eq("****_this_******_*******_validation")
       end
     end
 
