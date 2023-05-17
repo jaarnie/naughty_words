@@ -16,7 +16,6 @@ module NaughtyWords
       end
 
       def filter(string:, replacement:)
-        # TODO: Fix filtering full words ending with 'ing' and repeated words such as 'fuckfuckfuck'
         deny_list_array.each do |line|
           word = line
           string.gsub!(word, replacement * word.length)
@@ -42,13 +41,15 @@ module NaughtyWords
       private
 
       def deny_list_array
-        file = File.open(File.join(File.dirname(File.expand_path(__FILE__)), "config/deny_list.txt"))
+        file = File.open(File.join(File.dirname(File.expand_path(__FILE__)),
+                                   "config/deny_list.txt"))
 
         @deny_list_array ||= File.readlines(file, chomp: true)
       end
 
       def allow_list_array
-        file = File.open(File.join(File.dirname(File.expand_path(__FILE__)), "config/allow_list.txt"))
+        file = File.open(File.join(File.dirname(File.expand_path(__FILE__)),
+                                   "config/allow_list.txt"))
 
         @allow_list_array ||= File.readlines(file, chomp: true)
       end

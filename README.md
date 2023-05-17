@@ -45,12 +45,14 @@ The `filter` method takes a `string:` argument and an optional `replacement:` ar
     NaughtyWords.filter(string: "hello asshole")
     => "hello *******"
     
+    # you can filter out consecutive naughty words
+    NaughtyWords.filter(string: "shitshitshityeah")
+    => "************yeah"
+    
     # you can use in your own filter character by passing it in as an argument  ("*" is by default)
     NaughtyWords.filter(string: "hello asshole", replacement: "!")
     => "hello !!!!!!!"
 ```
-
-Note: Current, this is comically easy to circumvent. String like "shitshitshit" will only filter out the first match, returning "*****shitshit". A fix is enroute.
 
 ### Validating in Rails example
 We can use a custom validator in our User model to make sure a user cannot sign up with a username containing profanities in tandem with our normal `validates` methods.
