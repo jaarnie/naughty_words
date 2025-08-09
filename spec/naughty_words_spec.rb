@@ -45,6 +45,49 @@ RSpec.describe NaughtyWords do
         expect(NaughtyWords.check(string: string)).to eq(true)
       end
     end
+
+    context "with severity levels" do
+      before do
+        NaughtyWords::WordList.create!(word: "bad_word", list_type: "deny", severity: "high")
+        NaughtyWords::WordList.create!(word: "medium_word", list_type: "deny", severity: "medium")
+        NaughtyWords::WordList.create!(word: "low_word", list_type: "deny", severity: "low")
+      end
+
+      it "allows bypassing low severity words" do
+        word = "low_word"
+        is_profane = NaughtyWords.check(string: word)
+        expect(is_profane).to be true
+
+        is_profane = false if NaughtyWords::WordList.by_severity("low").pluck(:word).include?(word)
+        expect(is_profane).to be false
+      end
+
+      it "can check only high severity words" do
+        word = "bad_word"
+        is_profane = NaughtyWords::WordList.by_severity("high").pluck(:word).include?(word)
+        expect(is_profane).to be true
+
+        word = "medium_word"
+        is_profane = NaughtyWords::WordList.by_severity("high").pluck(:word).include?(word)
+        expect(is_profane).to be false
+      end
+
+      it "can combine severity with categories" do
+        NaughtyWords::WordList.create!(
+          word: "insult_word",
+          list_type: "deny",
+          severity: "high",
+          category: "insults"
+        )
+
+        high_severity_insults = NaughtyWords::WordList.by_severity("high")
+                                                     .by_category("insults")
+                                                     .pluck(:word)
+
+        expect(high_severity_insults).to include("insult_word")
+        expect(high_severity_insults).not_to include("bad_word")
+      end
+    end
   end
 
   describe "#filter" do
