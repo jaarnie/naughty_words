@@ -69,7 +69,7 @@ NaughtyWords::Config.reset!
 
 The gem can use a database (ActiveRecord) to store custom word lists.
 
-1) Install migration, model, and initializer:
+1) Install migration, model, and initializer (recommended):
 ```bash
 rails generate naughty_words:install
 ```
@@ -159,6 +159,8 @@ NaughtyWords.configure { |c| c.minimum_severity = "medium" }
 NaughtyWords::WordList.by_severity("high").pluck(:word)
 NaughtyWords::WordList.by_severity("high").by_category("insults").pluck(:word)
 ```
+
+If you don't install the DB table, the gem will work using only the built-in lists.
 
 ## Runtime Overrides
 

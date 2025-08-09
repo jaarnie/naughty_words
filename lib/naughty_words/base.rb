@@ -64,9 +64,9 @@ module NaughtyWords
       end
 
       def deny_list_from_db
-        return [] unless defined?(WordList)
+        return [] unless db_table_available?
         query = WordList.deny_list
-        
+
         if Config.minimum_severity
           severities = %w[high medium low]
           min_index = severities.index(Config.minimum_severity)
@@ -74,13 +74,17 @@ module NaughtyWords
           allowed_severities = severities[0..min_index]
           query = query.where(severity: allowed_severities)
         end
-        
+
         query.pluck(:word)
+      rescue StandardError
+        []
       end
 
       def allow_list_from_db
-        return [] unless defined?(WordList)
+        return [] unless db_table_available?
         WordList.allow_list.pluck(:word)
+      rescue StandardError
+        []
       end
 
       def deny_list_path
@@ -143,6 +147,14 @@ module NaughtyWords
         unless valid_lists.include?(list)
           raise ArgumentError, "Invalid list type. Must be one of: #{valid_lists.join(', ')}"
         end
+      end
+
+      def db_table_available?
+        return false unless defined?(WordList) && defined?(ActiveRecord::Base)
+        conn = ActiveRecord::Base.connection
+        conn.data_source_exists?(WordList.table_name)
+      rescue StandardError
+        false
       end
     end
   end
