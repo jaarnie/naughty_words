@@ -1,10 +1,17 @@
 # frozen_string_literal: true
 
 require_relative "naughty_words/version"
-require "naughty_words/base"
+require_relative "naughty_words/config"
+require_relative "naughty_words/word_list"
+require_relative "naughty_words/base"
 
 module NaughtyWords
   class Error < StandardError; end
+
+  def self.configure
+    Config.configure { |config| yield(config) }
+  end
+
   class << self
     def check(string:)
       Base.profanity?(string: string)
@@ -14,16 +21,8 @@ module NaughtyWords
       Base.filter(string: string, replacement: replacement)
     end
 
-    def add_to_deny_list(string:)
-      Base.add_to_list(list: "deny_list_file", string: string)
-    end
-
-    def add_to_allow_list(string:)
-      Base.add_to_list(list: "allow_list_file", string: string)
-    end
-
-    def show_list(list:)
-      Base.show_list(list: list)
+    def show_list(list:, include_metadata: false)
+      Base.show_list(list: list, include_metadata: include_metadata)
     end
   end
 end
