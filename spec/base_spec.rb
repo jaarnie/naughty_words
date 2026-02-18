@@ -161,6 +161,13 @@ RSpec.describe NaughtyWords::Base do
         expect(described_class.filter(string: string, replacement: "5")).to eq("5555 you")
       end
 
+      it "preserves original word length with multi-character replacement" do
+        string = "fuck you"
+        result = described_class.filter(string: string, replacement: "@@")
+        expect(result).to eq("@@@@ you")
+        expect(result.length).to eq(string.length)
+      end
+
       it "doesn't modify strings without profanity" do
         string = "hello world"
         expect(described_class.filter(string: string)).to eq(string)

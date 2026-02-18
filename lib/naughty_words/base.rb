@@ -34,7 +34,7 @@ module NaughtyWords
 
         denied_words.each do |word|
           next if word.empty?
-          result.gsub!(/#{Regexp.escape(word)}/i, replacement * word.length)
+          result.gsub!(/#{Regexp.escape(word)}/i, (replacement * word.length)[0, word.length])
         end
 
         result
