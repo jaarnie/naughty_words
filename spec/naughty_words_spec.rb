@@ -123,11 +123,35 @@ RSpec.describe NaughtyWords do
     end
   end
 
-  describe "#add_to_list" do
-    context "when deny_list" do
-      it "adds the string to the deny_list" do
-        # TODO: get those spec fixture .txt files sorted
-      end
+  describe "#filter and DB allow list" do
+    it "does not filter a word added to the DB allow list even if it is on the built-in deny list" do
+      NaughtyWords::WordList.create!(word: "fuck", list_type: "allow")
+      expect(NaughtyWords.filter(string: "fuck this")).to eq("fuck this")
+    end
+
+    it "still filters other denied words in the same string" do
+      NaughtyWords::WordList.create!(word: "fuck", list_type: "allow")
+      expect(NaughtyWords.filter(string: "fuck shit")).to eq("fuck ****")
+    end
+  end
+
+  describe "check vs filter asymmetry" do
+    it "check respects word boundaries; filter always masks substrings" do
+      # With word_boundaries=true, 'fuck' is not a boundary-delimited word in 'fuckthis'
+      expect(NaughtyWords.check(string: "fuckthis")).to eq(false)
+      expect(NaughtyWords.filter(string: "fuckthis")).to eq("****this")
+    end
+
+    it "check respects the allow list; filter still masks the denied substring within the allowed word" do
+      # 'scunthorpe' is allow-listed; 'cunt' (positions 1-4) is denied — filter masks the substring
+      expect(NaughtyWords.check(string: "scunthorpe")).to eq(false)
+      expect(NaughtyWords.filter(string: "scunthorpe")).to eq("s****horpe")
+    end
+
+    it "filter masks deny-list substrings inside allow-listed words" do
+      # 'shitake' is in the allow list; 'shit' is denied — substring is still masked by filter
+      expect(NaughtyWords.check(string: "shitake mushrooms")).to eq(false)
+      expect(NaughtyWords.filter(string: "shitake mushrooms")).to eq("****ake mushrooms")
     end
   end
 end

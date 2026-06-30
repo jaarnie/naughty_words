@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateNaughtyWordsLists < ActiveRecord::Migration[7.0]
+class CreateNaughtyWordsLists < ActiveRecord::Migration[<%= ActiveRecord::Migration.current_version %>]
   def change
     create_table :naughty_words_lists do |t|
       t.string :word, null: false
