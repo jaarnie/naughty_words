@@ -29,7 +29,9 @@ module NaughtyWords
         denied_words = Config.deny_overrides.dup
         denied_words += deny_list_from_files if Config.use_built_in_lists
         denied_words += deny_list_from_db
-        denied_words -= Config.allow_overrides # Remove any allowed overrides
+        denied_words -= Config.allow_overrides
+        denied_words -= allow_list_from_files if Config.use_built_in_lists
+        denied_words -= allow_list_from_db
         denied_words = denied_words.sort_by(&:length).reverse
 
         denied_words.each do |word|
@@ -43,7 +45,7 @@ module NaughtyWords
       def show_list(list:, include_metadata: false)
         validate_list!(list)
         
-        if include_metadata && defined?(WordList)
+        if include_metadata && defined?(ActiveRecord::Base) && defined?(WordList)
           WordList.where(list_type: list)
         else
           words = []
@@ -96,7 +98,6 @@ module NaughtyWords
       end
 
       def load_list(path)
-        return [] unless Config.use_built_in_lists
         File.readlines(path, chomp: true).reject(&:empty?)
       rescue Errno::ENOENT
         raise Error, "List file not found: #{path}"
@@ -113,15 +114,6 @@ module NaughtyWords
 
       def normalize_string(str)
         str.downcase
-      end
-
-      def word_pattern(word)
-        escaped = Regexp.escape(word)
-        if Config.word_boundaries
-          /(?:^|[^a-zA-Z0-9])#{escaped}(?:$|[^a-zA-Z0-9])/i
-        else
-          /#{escaped}/i
-        end
       end
 
       def word_match?(string, word)

@@ -201,6 +201,68 @@ RSpec.describe NaughtyWords::Base do
         expect(described_class.show_list(list: "allow")).to include("scunthorpe")
       end
     end
+
+    context "with include_metadata: true" do
+      before do
+        NaughtyWords::WordList.create!(word: "testword", list_type: "deny")
+      end
+
+      it "returns an ActiveRecord::Relation" do
+        result = described_class.show_list(list: "deny", include_metadata: true)
+        expect(result).to be_a(ActiveRecord::Relation)
+      end
+
+      it "returns records matching the given list type" do
+        result = described_class.show_list(list: "deny", include_metadata: true)
+        expect(result.map(&:word)).to include("testword")
+      end
+
+      it "does not include records from the other list type" do
+        NaughtyWords::WordList.create!(word: "allowedword", list_type: "allow")
+        result = described_class.show_list(list: "deny", include_metadata: true)
+        expect(result.map(&:word)).not_to include("allowedword")
+      end
+    end
+  end
+
+  describe "use_built_in_lists toggling" do
+    it "built-in deny words are not matched when use_built_in_lists is false" do
+      NaughtyWords::Config.use_built_in_lists = false
+      expect(described_class.profanity?(string: "fuck")).to be false
+    end
+
+    it "built-in deny words are matched again after re-enabling use_built_in_lists" do
+      NaughtyWords::Config.use_built_in_lists = false
+      described_class.profanity?(string: "fuck")
+      NaughtyWords::Config.use_built_in_lists = true
+      expect(described_class.profanity?(string: "fuck")).to be true
+    end
+
+    it "built-in allow words are honoured again after re-enabling use_built_in_lists" do
+      NaughtyWords::Config.use_built_in_lists = false
+      described_class.profanity?(string: "scunthorpe")
+      NaughtyWords::Config.use_built_in_lists = true
+      expect(described_class.profanity?(string: "scunthorpe")).to be false
+    end
+  end
+
+  describe ".filter allow list interaction" do
+    it "does not mask a word in the DB allow list even if it matches a built-in deny word" do
+      NaughtyWords::WordList.create!(word: "fuck", list_type: "allow")
+      expect(described_class.filter(string: "fuck you")).to eq("fuck you")
+    end
+
+    it "still masks other denied words in the same string" do
+      NaughtyWords::WordList.create!(word: "fuck", list_type: "allow")
+      expect(described_class.filter(string: "fuck shit")).to eq("fuck ****")
+    end
+
+    it "file allow list wins over DB deny for the exact word; its denied substring is still masked" do
+      NaughtyWords::WordList.create!(word: "scunthorpe", list_type: "deny")
+      # 'scunthorpe' is removed from denied_words by allow_list_from_files,
+      # but 'cunt' (a separate deny-list entry) still matches inside it at positions 1-4
+      expect(described_class.filter(string: "visit scunthorpe")).to eq("visit s****horpe")
+    end
   end
 end
 
